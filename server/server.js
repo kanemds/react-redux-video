@@ -28,5 +28,16 @@ app.use(express.json()); // able to read req.body json file
 app.use('/', routes);
 
 
+// middleware
+app.use((error, req, res , next) => {
+  const status = error.status || 500;
+  const message = error.message || "Error Occured";
+  return res.status(status).json({
+    success:false,
+    status,
+    message
+  });
+});
+
 
 
