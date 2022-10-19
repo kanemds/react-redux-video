@@ -24,7 +24,9 @@ mongoose
   });
 
 app.use(cors());
+app.use(express.json()); // able to read req.body json file
 app.use('/', routes);
+
 
 
 
