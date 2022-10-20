@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const createError = require('../utility/error');
 
 const getAll = async(req, res) => {
   
@@ -12,10 +13,37 @@ const getAll = async(req, res) => {
 };
 
 const update = async(req, res, next) => {
-  
+  // req.user created by verifyToken middleware
+  // the login user id === veryify token user.id
+  if (req.params.id === req.user.id) {
+    try {
+      const updatedUser = await User.findByIdAndUpdate(
+        req.params.id,
+        {
+          $set:req.body
+        },
+        {new: true}
+      );
+      res.status(200).json(updatedUser);
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    return next(createError(403, "Not Authenicated!"));
+  }
 };
+
 const deleteUser = async(req, res, next) => {
-  
+  if (req.params.id === req.user.id) {
+    try {
+      await User.findByIdAndDelete(req.params.id);
+      res.status(200).json("User Deleted");
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    return next(createError(403, "Not Authenicated!"));
+  }
 };
 
 const getUser = async(req, res, next) => {
