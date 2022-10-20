@@ -47,13 +47,42 @@ const deleteUser = async(req, res, next) => {
 };
 
 const getUser = async(req, res, next) => {
-  
+
+  try {
+    const user = await User.findById(req.params.id);
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+
 };
 const subscribe = async(req, res, next) => {
-  
+  try {
+    // find current user as user.id and push the subUserId from req.params.id to current user model
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: {subscribedUsers: req.params.id}
+    });
+    // increament 1 to subUser model
+    await User.findByIdAndUpdate(req.params.id,{
+      $inc:{subscribers:1}
+    });
+    res.status(200).json("Subscribed");
+  } catch (error) {
+    next(error);
+  }
 };
 const unsubscribe = async(req, res, next) => {
-  
+  try {
+    await User.findByIdAndUpdate(req.user.id, {
+      $pull: {subscribedUsers: req.params.id}
+    });
+    await User.findByIdAndUpdate(req.params.id,{
+      $inc:{subscribers: -1}
+    });
+    res.status(200).json("Unsubscribed");
+  } catch (error) {
+    next(error);
+  }
 };
 const like = async(req, res, next) => {
   
