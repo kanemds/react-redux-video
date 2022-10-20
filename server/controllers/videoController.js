@@ -90,6 +90,8 @@ const trendVideo = async(req, res, next) => {
 
 const randomVideo = async(req, res, next) => {
   try {
+    // aggregate: return selected value
+    // $sample:Randomly selects the specified number of documents
     const videos = await Video.aggregate([{$sample: {size:40}}]);
     res.status(200).json(videos);
   } catch (error) {
@@ -102,15 +104,41 @@ const subVideo = async(req, res, next) => {
     const user = await User.findById(req.user.id);
     const subscribedChannels = user.subscribedUsers;
 
-    const list = Promise.all(
+    const list = await Promise.all(
       subscribedChannels.map(channelId =>{
         return Video.find({userId:channelId});
       })
     );
-    res.status(200).json(list);
+    res.status(200).json(list.flat().sort((a,b) => b.createdAt - a.createdAt));
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = {getAll, addVideo,updateVideo, deleteVideo, getVideo, viewVideo, trendVideo, randomVideo, subVideo};
+const findBySearch = async(req, res, next) => {
+  const query = req.query.q;
+  try {
+    const videos = await Video.find({
+      // find any letter match with query, $i: Case insensitivity to match upper and lower cases
+      title:{$regex:query, $options:"i"}
+    }).limit(40);
+    res.status(200).json(videos);
+  } catch (error) {
+    next(error);
+  }
+};
+const findByTags = async(req, res, next) => {
+  // backendUrl/tags?tags=a,b,c
+  // tags = a,b,c
+  // tags = ["a", "b", "c"]
+  const tags = req.query.tags.split(",");
+  try {
+    // The $in operator selects the documents where the value of a field equals any value in the specified array
+    const videos = await Video.find({tags:{$in:tags}}).limit(20);
+    res.status(200).json(videos);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {getAll, addVideo,updateVideo, deleteVideo, getVideo, viewVideo, trendVideo, randomVideo, subVideo, findBySearch, findByTags};
