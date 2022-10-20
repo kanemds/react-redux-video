@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Video = require('../models/video');
 const createError = require('../utility/error');
 
 const getAll = async(req, res) => {
@@ -84,11 +85,37 @@ const unsubscribe = async(req, res, next) => {
     next(error);
   }
 };
+
 const like = async(req, res, next) => {
-  
+  const id = req.user.id;
+  const videoId = req.params.videoId;
+
+  try {
+    await Video.findByIdAndUpdate(videoId, {
+      // instead of push may cause duplicate, use addToSet only one in array
+      $addToSet: {likes:id},
+      $pull:{dislikes:id}
+    });
+    res.status(200).json("Liked");
+  } catch (error) {
+    next(error);
+  }
 };
+
 const dislike = async(req, res, next) => {
-  
+  const id = req.user.id;
+  const videoId = req.params.videoId;
+
+  try {
+    await Video.findByIdAndUpdate(videoId, {
+      // instead of push may cause duplicate, use addToSet only one in array
+      $addToSet: {dislikes:id},
+      $pull:{likes:id}
+    });
+    res.status(200).json("Disliked");
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports = {getAll, update, deleteUser, getUser, subscribe, unsubscribe, like, dislike};

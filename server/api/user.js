@@ -13,8 +13,9 @@ router.delete('/:id',verifyToken, deleteUser);
 router.put('/sub/:id',verifyToken, subscribe);
 router.put('/unsub/:id', verifyToken,unsubscribe);
 
-router.put('/like/:video', verifyToken,like);
-router.put('/dislike/:video',verifyToken, dislike);
+// :videoId === req.params.videoId must match
+router.put('/like/:videoId', verifyToken,like);
+router.put('/dislike/:videoId',verifyToken, dislike);
 
 
 module.exports = router;
