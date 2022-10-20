@@ -1,7 +1,12 @@
 const router = require('express').Router();
-const {getAllRequest} = require('../controllers/commentController');
+const verifyToken = require('../utility/verifyToken');
+const {addComment, getComment, deleteComment} = require('../controllers/commentController');
 
 
-router.get('/', getAllRequest);
+
+
+router.post('/', verifyToken, addComment);
+router.get('/:videoId', verifyToken, getComment);
+router.delete('/:id', verifyToken, deleteComment);
 
 module.exports = router;
