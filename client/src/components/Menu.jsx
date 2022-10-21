@@ -15,9 +15,12 @@ import SportsEsportsOutlinedIcon from "@mui/icons-material/SportsEsportsOutlined
 import SubscriptionsOutlinedIcon from "@mui/icons-material/SubscriptionsOutlined";
 import VideoLibraryOutlinedIcon from "@mui/icons-material/VideoLibraryOutlined";
 import React from "react";
+import { useSelector } from 'react-redux';
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import LamaTube from "../img/logo.png";
+
+
 const Container = styled.div`
   flex: 1;
   background-color: ${({ theme }) => theme.bgLighter};
@@ -81,6 +84,9 @@ const Title = styled.h2`
 `;
 
 const Menu = ({ darkMode, setDarkMode }) => {
+
+  const {currentUser } = useSelector(state => state.user)
+
   return (
     <Container>
       <Wrapper>
@@ -116,7 +122,8 @@ const Menu = ({ darkMode, setDarkMode }) => {
           History
         </Item>
         <Hr />
-        <Login>
+        { !currentUser &&
+          <><Login>
           Sign in to like videos, comment, and subscribe.
           <Link to="signin" style={{textDecoration:"none"}}>
             <Button>
@@ -125,7 +132,7 @@ const Menu = ({ darkMode, setDarkMode }) => {
             </Button>
           </Link>
         </Login>
-        <Hr />
+        <Hr /></>}
         <Title>BEST OF LAMATUBE</Title>
         <Item>
           <LibraryMusicOutlinedIcon />
