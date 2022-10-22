@@ -1,5 +1,6 @@
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import ExploreOutlinedIcon from "@mui/icons-material/ExploreOutlined";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
@@ -15,10 +16,11 @@ import SportsEsportsOutlinedIcon from "@mui/icons-material/SportsEsportsOutlined
 import SubscriptionsOutlinedIcon from "@mui/icons-material/SubscriptionsOutlined";
 import VideoLibraryOutlinedIcon from "@mui/icons-material/VideoLibraryOutlined";
 import React from "react";
-import { useSelector } from 'react-redux';
-import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import LamaTube from "../img/logo.png";
+import { logOut } from "../redux/userSlice";
 
 
 const Container = styled.div`
@@ -85,7 +87,16 @@ const Title = styled.h2`
 
 const Menu = ({ darkMode, setDarkMode }) => {
 
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
   const {currentUser } = useSelector(state => state.user)
+
+
+
+  const signOut = () => {
+    dispatch(logOut())
+    navigate(-1)
+  }
 
   return (
     <Container>
@@ -133,7 +144,7 @@ const Menu = ({ darkMode, setDarkMode }) => {
           </Link>
         </Login>
         <Hr /></>}
-        <Title>BEST OF LAMATUBE</Title>
+        <Title>BEST OF K-Tube</Title>
         <Item>
           <LibraryMusicOutlinedIcon />
           Music
@@ -175,7 +186,14 @@ const Menu = ({ darkMode, setDarkMode }) => {
           <SettingsBrightnessOutlinedIcon />
           {darkMode ? "Light" : "Dark"} Mode
         </Item>
+        {currentUser ?
+          <Item onClick={signOut}>
+            <ExitToAppIcon />
+            Sign Out
+          </Item> : null 
+        }
       </Wrapper>
+   
     </Container>
   );
 };

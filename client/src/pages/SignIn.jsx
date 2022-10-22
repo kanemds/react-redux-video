@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import React, { useState } from "react";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { loginFailure, loginStart, loginSuccess } from '../redux/userSlice';
+import { loginFailure, loginStart, loginSuccess, logOut } from '../redux/userSlice';
 import { auth, provider } from '../utils/firebase';
 
 const Container = styled.div`
@@ -72,6 +72,7 @@ const Link = styled.span`
 const SignIn = () => {
 
   const navigate = useNavigate()
+  const {currentUser } = useSelector(state => state.user)
 
   const [name,setName] = useState("")
   const [email,setEmail] = useState("")
@@ -110,7 +111,32 @@ const SignIn = () => {
     })
   }
 
+  const signOut = () => {
+    dispatch(logOut())
+    navigate(-1)
+  }
+ 
   return (
+    <>
+    {currentUser ? 
+      (
+      <Container>
+      <Wrapper>
+      {currentUser.name}
+      <Button onClick={signOut}>Sign Out</Button>
+      </Wrapper>
+      <More>
+        English(USA)
+        <Links>
+          <Link>Help</Link>
+          <Link>Privacy</Link>
+          <Link>Terms</Link>
+        </Links>
+      </More>
+      </Container>
+      )
+      :
+      (
     <Container>
       <Wrapper>
         <Title>Sign in</Title>
@@ -126,6 +152,7 @@ const SignIn = () => {
         <Input type="password" placeholder="password" onChange={e => setPassword(e.target.value)}/>
         <Button>Sign up</Button>
       </Wrapper>
+     
       <More>
         English(USA)
         <Links>
@@ -134,7 +161,11 @@ const SignIn = () => {
           <Link>Terms</Link>
         </Links>
       </More>
+     
     </Container>
+    )
+  }
+  </>
   );
 };
 
