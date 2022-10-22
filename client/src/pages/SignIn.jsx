@@ -2,6 +2,7 @@ import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
 import React, { useState } from "react";
 import { useDispatch } from 'react-redux';
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { loginFailure, loginStart, loginSuccess } from '../redux/userSlice';
 import { auth, provider } from '../utils/firebase';
@@ -70,6 +71,8 @@ const Link = styled.span`
 
 const SignIn = () => {
 
+  const navigate = useNavigate()
+
   const [name,setName] = useState("")
   const [email,setEmail] = useState("")
   const [password,setPassword] = useState("")
@@ -82,18 +85,28 @@ const SignIn = () => {
     try {
       const res = await axios.post('/auth/signin', {name, password})
       dispatch(loginSuccess(res.data))
+      navigate(-1)
     } catch (error) {
       dispatch(loginFailure())
     }
   }
 
-  const signInWithGoogle = () => {
+  const signInWithGoogle = async () => {
+    dispatch(loginStart())
     signInWithPopup(auth,provider)
-    .then(result => {
-      console.log(result)
+    .then(googleInfo => {
+      console.log(googleInfo)
+      axios.post('/auth/google', {
+        name:googleInfo.user.displayName,
+        email:googleInfo.user.email,
+        image:googleInfo.user.photoURL
+      }).then(res => {
+        dispatch(loginSuccess(res.data))
+        navigate(-1)
+      })
     })
     .catch(error => {
-
+      dispatch(loginFailure())
     })
   }
 

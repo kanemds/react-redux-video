@@ -43,4 +43,32 @@ const signin = async(req, res, next) => {
   }
 };
 
-module.exports = { signup, signin };
+const googleAuth = async(req, res, next) => {
+  try {
+    const user = await User.findOne({email:req.body.email});
+    if (user) {
+      const token = jwt.sign({id:user._id}, process.env.JWT_SECRECT);
+    
+      res.cookie('access_token', token, {
+        httpOnly:true
+      }).status(200).json(user._doc);
+      console.log(user);
+    } else {
+      const newUser = new User({
+        ...req.body,
+        fromGoogle:true
+      });
+      const savedUser = await newUser.save();
+      const token = jwt.sign({id:savedUser._id}, process.env.JWT_SECRECT);
+    
+      res.cookie('access_token', token, {
+        httpOnly:true
+      }).status(200).json(savedUser._doc);
+      console.log(savedUser._doc);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin, googleAuth };
