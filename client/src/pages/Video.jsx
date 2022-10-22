@@ -2,10 +2,14 @@ import AddTaskOutlinedIcon from "@mui/icons-material/AddTaskOutlined";
 import ReplyOutlinedIcon from "@mui/icons-material/ReplyOutlined";
 import ThumbDownOffAltOutlinedIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
-import Card from "../components/Card";
+import { format } from 'timeago.js';
 import Comments from "../components/Comments";
+import { fetchFailure, fetchStart, fetchSuccess } from "../redux/videoSlice";
 
 const Container = styled.div`
   display: flex;
@@ -105,6 +109,42 @@ const Subscribe = styled.button`
 `;
 
 const Video = () => {
+  
+  const {currentUser} = useSelector(state => state.user)
+  const {currentVideo} = useSelector(state =>  state.video)
+ 
+  const dispatch = useDispatch()
+
+const path = useLocation().pathname.split('/')[2]
+
+// or 
+  // const {id} = useParams()
+  
+
+  const [channel, setChannel] = useState({})
+
+
+
+  useEffect(() => {
+    dispatch(fetchStart())
+    const fetchData = async () => {
+      try {
+        const videoRes = await axios.get(`/video/find/${path}`)
+        console.log("video", videoRes.data)
+        const channelRes = await axios.get(`/user/find/${videoRes.data.userId}`)
+        console.log("user", channelRes.data)
+        setChannel(channelRes) 
+        dispatch(fetchSuccess(videoRes.data))
+
+      } catch (error) {
+        dispatch(fetchFailure())
+      }
+    }
+    fetchData()
+
+  },[path, dispatch])
+
+  
   return (
     <Container>
       <Content>
@@ -119,15 +159,15 @@ const Video = () => {
             allowfullscreen
           ></iframe>
         </VideoWrapper>
-        <Title>Test Video</Title>
+        <Title>{currentVideo.title}</Title>
         <Details>
-          <Info>7,948,154 views • Jun 22, 2022</Info>
+          <Info>{currentVideo.views} views • {format(currentVideo.createdAt)}</Info>
           <Buttons>
             <Button>
-              <ThumbUpOutlinedIcon /> 123
+              <ThumbUpOutlinedIcon /> {currentVideo.likes?.length}
             </Button>
             <Button>
-              <ThumbDownOffAltOutlinedIcon /> Dislike
+              <ThumbDownOffAltOutlinedIcon />  {currentVideo.dislikes?.length}
             </Button>
             <Button>
               <ReplyOutlinedIcon /> Share
@@ -140,15 +180,12 @@ const Video = () => {
         <Hr />
         <Channel>
           <ChannelInfo>
-            <Image src="https://yt3.ggpht.com/yti/APfAmoE-Q0ZLJ4vk3vqmV4Kwp0sbrjxLyB8Q4ZgNsiRH=s88-c-k-c0x00ffffff-no-rj-mo" />
+            <Image src={channel.image} />
             <ChannelDetail>
-              <ChannelName>Lama Dev</ChannelName>
-              <ChannelCounter>200K subscribers</ChannelCounter>
+              <ChannelName>{channel.name}</ChannelName>
+              <ChannelCounter>{channel.subscribers} subscribers</ChannelCounter>
               <Description>
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                Doloribus laborum delectus unde quaerat dolore culpa sit aliquam
-                at. Vitae facere ipsum totam ratione exercitationem. Suscipit
-                animi accusantium dolores ipsam ut.
+              {channel.desc}
               </Description>
             </ChannelDetail>
           </ChannelInfo>
@@ -158,6 +195,7 @@ const Video = () => {
         <Comments/>
       </Content>
       <Recommendation>
+        {/* <Card type="sm"/>
         <Card type="sm"/>
         <Card type="sm"/>
         <Card type="sm"/>
@@ -169,8 +207,7 @@ const Video = () => {
         <Card type="sm"/>
         <Card type="sm"/>
         <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
+        <Card type="sm"/> */}
       </Recommendation>
     </Container>
   );
