@@ -7,11 +7,12 @@ import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { format } from 'timeago.js';
 import Comments from "../components/Comments";
-import { dislike, fetchFailure, fetchStart, fetchSuccess, like } from "../redux/videoSlice";
+import { subcription } from "../redux/userSlice";
+import { dislike, fetchFailure, fetchSuccess, like } from "../redux/videoSlice";
 
 const Container = styled.div`
   display: flex;
@@ -114,37 +115,39 @@ const Video = () => {
   
   const {currentUser} = useSelector(state => state.user)
   const {currentVideo} = useSelector(state =>  state.video)
- 
+ console.log(currentUser)
+ console.log(currentVideo)
   const dispatch = useDispatch()
 
-const path = useLocation().pathname.split('/')[2]
+// const path = useLocation().pathname.split('/')[2]
 
 // or 
-  // const {id} = useParams()
+  const {id} = useParams()
   
 
   const [channel, setChannel] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
 
 
 
   useEffect(() => {
-    dispatch(fetchStart())
+  
     const fetchData = async () => {
       try {
-        const videoRes = await axios.get(`/video/find/${path}`)
-        console.log("video", videoRes.data)
+        setIsLoading(true)
+        const videoRes = await axios.get(`/video/find/${id}`)
+        console.log(videoRes)
         const channelRes = await axios.get(`/user/find/${videoRes.data.userId}`)
-        console.log("user", channelRes.data)
-        setChannel(channelRes) 
-        dispatch(fetchSuccess(videoRes.data))
-
+        setChannel(channelRes.data);
+        dispatch(fetchSuccess(videoRes.data));
+        setIsLoading(false)
       } catch (error) {
         dispatch(fetchFailure())
       }
     }
     fetchData()
 
-  },[path, dispatch])
+  },[id, dispatch])
 
   const handleLike = async () => {
     await axios.put(`/user/like/${currentVideo._id}`)
@@ -156,8 +159,19 @@ const path = useLocation().pathname.split('/')[2]
     dispatch(dislike(currentUser._id))
   }
 
+  const handleSub = async () => {
+    currentUser.subscribedUsers.includes(channel._id) ?
+    await axios.put(`/user/unsub/${channel._id}`) :
+    await axios.put(`/user/sub/${channel._id}`)
+    dispatch(subcription(channel._id))
+  }
+ 
   
   return (
+    <>
+    {isLoading && !currentUser && !currentVideo ? 
+    <Container>"Loading"</Container> 
+    : 
     <Container>
       <Content>
         <VideoWrapper>
@@ -171,12 +185,12 @@ const path = useLocation().pathname.split('/')[2]
             allowfullscreen
           ></iframe>
         </VideoWrapper>
-        <Title>{currentVideo.title}</Title>
+        <Title>{currentVideo?.title}</Title>
         <Details>
-          <Info>{currentVideo.views} views • {format(currentVideo.createdAt)}</Info>
+          <Info>{currentVideo?.views} views • {format(currentVideo?.createdAt)}</Info>
           <Buttons>
             <Button onClick={handleLike}>
-              {currentVideo.likes?.includes(currentUser._id) ? 
+              {currentVideo.likes?.includes(currentUser?._id) ? 
               <ThumbUpIcon />
               : 
                 <ThumbUpOutlinedIcon />
@@ -184,7 +198,7 @@ const path = useLocation().pathname.split('/')[2]
              {currentVideo.likes?.length}
             </Button>
             <Button onClick={handleDisLike}>
-            {currentVideo.dislikes?.includes(currentUser._id) ? 
+            {currentVideo.dislikes?.includes(currentUser?._id) ? 
               <ThumbDownIcon />
               :
               <ThumbDownOffAltOutlinedIcon />  }
@@ -210,7 +224,11 @@ const path = useLocation().pathname.split('/')[2]
               </Description>
             </ChannelDetail>
           </ChannelInfo>
-          <Subscribe>SUBSCRIBE</Subscribe>
+          <Subscribe onClick={handleSub}>
+            {currentUser?.subscribedUsers?.includes(channel?._id) ? 
+              "SUBSCRIBED" : "SUBSCRIBE"
+            }
+          </Subscribe>
         </Channel>
         <Hr />
         <Comments/>
@@ -230,7 +248,10 @@ const path = useLocation().pathname.split('/')[2]
         <Card type="sm"/>
         <Card type="sm"/> */}
       </Recommendation>
+      
     </Container>
+    }
+    </>
   );
 };
 
