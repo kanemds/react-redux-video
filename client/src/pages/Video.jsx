@@ -1,6 +1,8 @@
 import AddTaskOutlinedIcon from "@mui/icons-material/AddTaskOutlined";
 import ReplyOutlinedIcon from "@mui/icons-material/ReplyOutlined";
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOffAltOutlinedIcon from "@mui/icons-material/ThumbDownOffAltOutlined";
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -9,7 +11,7 @@ import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { format } from 'timeago.js';
 import Comments from "../components/Comments";
-import { fetchFailure, fetchStart, fetchSuccess } from "../redux/videoSlice";
+import { dislike, fetchFailure, fetchStart, fetchSuccess, like } from "../redux/videoSlice";
 
 const Container = styled.div`
   display: flex;
@@ -144,6 +146,16 @@ const path = useLocation().pathname.split('/')[2]
 
   },[path, dispatch])
 
+  const handleLike = async () => {
+    await axios.put(`/user/like/${currentVideo._id}`)
+    dispatch(like(currentUser._id))
+  }
+
+   const handleDisLike = async () => {
+    await axios.put(`/user/dislike/${currentVideo._id}`)
+    dispatch(dislike(currentUser._id))
+  }
+
   
   return (
     <Container>
@@ -163,11 +175,20 @@ const path = useLocation().pathname.split('/')[2]
         <Details>
           <Info>{currentVideo.views} views • {format(currentVideo.createdAt)}</Info>
           <Buttons>
-            <Button>
-              <ThumbUpOutlinedIcon /> {currentVideo.likes?.length}
+            <Button onClick={handleLike}>
+              {currentVideo.likes?.includes(currentUser._id) ? 
+              <ThumbUpIcon />
+              : 
+                <ThumbUpOutlinedIcon />
+            }
+             {currentVideo.likes?.length}
             </Button>
-            <Button>
-              <ThumbDownOffAltOutlinedIcon />  {currentVideo.dislikes?.length}
+            <Button onClick={handleDisLike}>
+            {currentVideo.dislikes?.includes(currentUser._id) ? 
+              <ThumbDownIcon />
+              :
+              <ThumbDownOffAltOutlinedIcon />  }
+              {currentVideo.dislikes?.length}
             </Button>
             <Button>
               <ReplyOutlinedIcon /> Share
