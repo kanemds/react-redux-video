@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { format } from 'timeago.js';
 import Comments from "../components/Comments";
+import Recommendation from "../components/Recommendation";
 import { subcription } from "../redux/userSlice";
 import { dislike, fetchFailure, fetchSuccess, like } from "../redux/videoSlice";
 
@@ -60,9 +61,7 @@ const Hr = styled.hr`
   border: 0.5px solid ${({ theme }) => theme.soft};
 `;
 
-const Recommendation = styled.div`
-  flex: 2;
-`;
+
 const Channel = styled.div`
   display: flex;
   justify-content: space-between;
@@ -181,7 +180,7 @@ const Video = () => {
     <Container>
       <Content>
         <VideoWrapper>
-          <VideoFrame src={currentVideo.videoUrl} />
+          <VideoFrame src={currentVideo.videoUrl} controls/>
         </VideoWrapper>
         <Title>{currentVideo?.title}</Title>
         <Details>
@@ -231,21 +230,7 @@ const Video = () => {
         <Hr />
         <Comments videoId={currentVideo._id}/>
       </Content>
-      <Recommendation>
-        {/* <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/>
-        <Card type="sm"/> */}
-      </Recommendation>
+      <Recommendation tags={currentVideo.tags}/>
       
     </Container>
     }
