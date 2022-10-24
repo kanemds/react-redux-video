@@ -1,6 +1,8 @@
 
+import axios from 'axios';
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from "firebase/storage";
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import app from '../utils/firebase';
 
@@ -73,14 +75,14 @@ const Label = styled.label`
 
 const Upload = ({setOpen}) => {
 
-  
-
   const [image, setImage] = useState(null)
   const [video, setVideo] = useState(null)
   const [imgUpLoading, setImgUpLoading] = useState(0)
   const [videoUpLoading, setVideoUpLoading] = useState(0)
   const [inputs, setInputs] = useState({})
   const [tags, setTags] = useState([])
+  
+  const navigate = useNavigate()
 
   const handleChange = e => {
     setInputs(pre => {
@@ -116,7 +118,9 @@ const Upload = ({setOpen}) => {
             break;
         }
       },
-      (error) => {},
+      (error) => {
+        console.log(error.message)
+      },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setInputs((prev) => {
@@ -135,7 +139,16 @@ const Upload = ({setOpen}) => {
     image && uploadFile(image, "imageUrl")
   },[image])
 
+
+  const handleUpload = async (e)=>{
+    e.preventDefault();
+    const res = await axios.post('/video', {...inputs, tags})
+    setOpen(false)
+    res.status===200 && navigate(`/video/${res.data._id}`)
+  }
+
   
+  console.log(inputs)
   return (
     <Container>
       <Wrapper>
@@ -148,7 +161,7 @@ const Upload = ({setOpen}) => {
         }
 
         <Input type="text" placeholder='Title' name="title" onChange={handleChange}/>
-        <Desc placeholder='Tell Us about the Video' rows={8} name="dese" onChange={handleChange}/>
+        <Desc placeholder='Tell Us about the Video' rows={8} name="desc" onChange={handleChange}/>
         <Input type="text" placeholder='Separate the tags with commas.' onChange={handleTags}/>
         <Label>Image:</Label>
 
@@ -156,7 +169,7 @@ const Upload = ({setOpen}) => {
         <Input type='file' accept='image/*' onChange={e => setImage(e.target.files[0])} />
         }
         
-        <Button>Upload</Button>
+        <Button onClick={handleUpload}>Upload</Button>
       </Wrapper>
     </Container>
   )
